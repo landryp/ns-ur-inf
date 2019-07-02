@@ -32,21 +32,21 @@ def bifit(a,b,consts,n,q,Lambda):
 
 # GIVE UNIVERSAL RELATION FITS
 
-def IbarLove(m,Lambda): # Ibar-Love fit from Yagi+Yunes PhysRep '16
+def IbarLove_noerr(m,Lambda): # Ibar-Love fit from Yagi+Yunes PhysRep '16
 
 	consts = [1.496,0.05951,0.02238,-6.953e-4,8.345e-6]
 	n = 4
 
 	return np.exp(logfit(consts,n,Lambda))
 	
-def CLove(m,Lambda): # C-Love fit from Yagi+Yunes PhysRep '16
+def CLove_noerr(m,Lambda): # C-Love fit from Yagi+Yunes PhysRep '16
 
 	consts = [0.360,-0.0355,0.000705]
 	n = 2
 
 	return logfit(consts,n,Lambda)
 	
-def BinaryLove(q,LambdaS): # Binary Love fit from Yagi+Yunes CQG '16
+def BinaryLove_noerr(q,LambdaS): # Binary Love fit from Yagi+Yunes CQG '16
 
 	a = 0.07550
 	b = np.array([[-2.235,0.8474],[10.45,-3.251],[-15.70,13.61]])
@@ -55,7 +55,7 @@ def BinaryLove(q,LambdaS): # Binary Love fit from Yagi+Yunes CQG '16
 
 	return bifit(a,b,consts,n,q,LambdaS)
 	
-def CanonBiLove(m,Lambda): # Canonical binary Love fit from Kumar+Landry PRD '19
+def CanonBiLove_noerr(m,Lambda): # Canonical binary Love fit from Kumar+Landry PRD '19
 
 	consts = np.array([[-9.4469,4.6152],[3.9702e1,-1.2226e1],[-4.9173e1,1.4214e1],[2.4937e1,-7.1134],[-4.7288,1.3416]])
 
@@ -73,13 +73,21 @@ def RC(m,C): # R in terms of C
 
 	return R
 	
-# GIVE EFFECTIVE FITS FOR DERIVED QUANTITIES
+def chiI(m,I,Omega): # chi in terms of I
 
-def ILove(m,Lambda): # I in terms of Ibar-Love fit
-
-	return IIbar(m,IbarLove(m,Lambda))
+	return 1e45*c*I*Omega/(G*m**2*Msun**2)
 	
-def RLove(m,Lambda): # R in terms of C-Love fit
+# GIVE EFFECTIVE FITS FOR DERIVED QUANTITIES, WITHOUT ERROR IN UNIVERSAL RELATIONS
 
-	return RC(m,CLove(m,Lambda))
+def ILove_noerr(m,Lambda): # I in terms of Ibar-Love fit
+
+	return IIbar(m,IbarLove_noerr(m,Lambda))
+	
+def RLove_noerr(m,Lambda): # R in terms of C-Love fit
+
+	return RC(m,CLove_noerr(m,Lambda))
+	
+def chiLove_noerr(m,Lambda,Omega): # R in terms of C-Love fit
+
+	return chiI(m,ILove_noerr(m,Lambda),Omega)
 

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+nsname=$1
+nsmass=$2
+nsmassstd=$3
+lambda14=$4
+lambda14std=$5
+omega=$6
+omegastd=$7
+nsamps=$8
+outdir=$9
+
+inferprops $nsname -p R,C,I,Lambda,chi -M $nsmass,$nsmassstd -L $lambda14,$lambda14std -O $omega,$omegastd -n $nsamps -o $outdir/
+
+plothist "${nsname}_props.csv" -x R -t R -b 100 -d $outdir/ -o $outdir/
+plothist "${nsname}_props.csv" -x C -t C -b 100 -d $outdir/ -o $outdir/
+plothist "${nsname}_props.csv" -x I -t I -b 100 -d $outdir/ -o $outdir/
+plothist "${nsname}_props.csv" -x Lambda -t Lambda -b 100 -d $outdir/ -o $outdir/
+plothist "${nsname}_props.csv" -x chi -t chi -b 100 -d $outdir/ -o $outdir/

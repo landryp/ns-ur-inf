@@ -12,9 +12,10 @@ from nsurinf.universalrelationfits import *
 from nsurinf.universalrelationerror import * 
 
 parser = OptionParser(usage=__usage__, description=__doc__)
-parser.add_option('-p', '--props', default='R,I,Lambda,C', help='properties to infer, DEFAULT="R,I,Lambda,C"', metavar='PROP1,PROP2')
+parser.add_option('-p', '--props', default='R,I,Lambda,C,chi', help='properties to infer, DEFAULT="R,I,Lambda,C,chi"', metavar='PROP1,PROP2')
 parser.add_option('-M', '--mgauss', default='1.4,0.1', help='median and standard deviation for Gaussian uncertainty in stellar mass, DEFAULT=1.4,0.1', metavar='MED,STD')
 parser.add_option('-L', '--Lgauss', default='190,390', help='median and standard deviation for Gaussian uncertainty in canonical deformability from observations, DEFAULT=190,390', metavar='MED,STD')
+parser.add_option('-O', '--omegagauss', default='276.80,1e-6', help='median and standard deviation for Gaussian uncertainty in rotational frequency [rad/s], DEFAULT=276.80,1e-6', metavar='MED,STD')
 parser.add_option('-n', '--numsamps', default=1e4, help='number of samples to use for Monte-Carlo integration, DEFAULT=1e4', metavar='NUM_SAMPS')
 #parser.add_option('-d', '--dir', default='./dat/', help='path to directory housing universal relations fits, DEFAULT=./dat/', metavar='PATH/TO/DIR')
 parser.add_option('-o', '--outdir', default='./dat/', help='path to output directory, DEFAULT=./dat/', metavar='PATH/TO/OUTDIR')
@@ -31,6 +32,9 @@ mmed, mstd = [float(mparam) for mparam in mgauss]
 Lgauss = str(opts.Lgauss)
 Lgauss = Lgauss.split(',')
 Lmed, Lstd = [float(Lparam) for Lparam in Lgauss]
+omegagauss = str(opts.omegagauss)
+omegagauss = omegagauss.split(',')
+omegamed, omegastd = [float(omegaparam) for omegaparam in omegagauss]
 nsamps = float(opts.numsamps)
 nsamps = int(nsamps)
 #indir = str(opts.dir)
@@ -41,10 +45,9 @@ verb = opts.verbose
 outfile = open(outdir+nsname+tag+".csv","w")
 outfile.write('Lambda_14,M,'+','.join(props)+'\n')
 
-# LOAD UNIVERSAL RELATION FITS
+# LOAD UNIVERSAL RELATION FITS WITH MARGINALIZED UNCERTAINTIES
 
-ur = {'R': RLove,'I': ILove,'Lambda': CanonBiLove,'C': CLove}
-err = {'R': deltaRLove,'I': deltaILove,'Lambda': deltaCanonBiLove,'C': deltaCLove}
+ur = {'R': RLove,'I': ILove,'Lambda': CanonBiLove,'C': CLove,'chi': chiLove}
 
 # SAMPLE FROM POSTERIORS ON LAMBDA_1.4 AND M
 
@@ -52,6 +55,7 @@ if verb:	print 'Sampling from observed canonical deformability and target mass d
 
 Lsamps = posnormal(Lmed,Lstd,nsamps)
 msamps = posnormal(mmed,mstd,nsamps)
+omegasamps = posnormal(omegamed,omegastd,nsamps)
 
 # PERFORM BAYESIAN INFERENCE OF PROPERTIES VIA MONTE-CARLO INTEGRATION
 
@@ -63,11 +67,16 @@ for samp in range(nsamps):
 
 	msamp = msamps[samp]
 	Lsamp = Lsamps[samp]
+	omegasamp = omegasamps[samp] # COULD ALSO SAMPLE THESE SEPARATELY IF MORE EFFICIENT
 
 	propvals = []
 	for prop in props:
 	
-		propval = ur[prop](msamp,Lsamp)+err[prop](msamp,Lsamp)
+		if prop == 'chi':
+			propval = ur['chi'](msamp,Lsamp,omegasamp)
+	
+		else:
+			propval = ur[prop](msamp,Lsamp)
 	
 		propvals.append(propval)
 		
