@@ -1,0 +1,76 @@
+#!/usr/bin/python
+__doc__ = 'INFERPROPS -- infer properties of specified neutron star using universal relations and given canonical tidal deformability constraint'
+__usage__ = 'inferprops nsname [-v] [-p R,I,Lambda,C] [-M 1.4,0.1] [-L 190,390] [-o ./dat/]'
+__author__ = 'philippe.landry@ligo.org'
+__date__ = '04-2019'
+
+import numpy as np
+from numpy.random import normal
+from optparse import OptionParser
+from nsurinf.distributions import *
+from nsurinf.universalrelationfits import *
+
+parser = OptionParser(usage=__usage__, description=__doc__)
+parser.add_option('-p', '--props', default='R,I,Lambda,C', help='properties to infer, DEFAULT="R,I,Lambda,C"', metavar='PROP1,PROP2')
+parser.add_option('-M', '--mgauss', default='1.4,0.1', help='median and standard deviation for Gaussian uncertainty in stellar mass, DEFAULT=1.4,0.1', metavar='MED,STD')
+parser.add_option('-L', '--Lgauss', default='190,390', help='median and standard deviation for Gaussian uncertainty in canonical deformability from observations, DEFAULT=190,390', metavar='MED,STD')
+parser.add_option('-n', '--numsamps', default=1e4, help='number of samples to use for Monte-Carlo integration, DEFAULT=1e4', metavar='NUM_SAMPS')
+#parser.add_option('-d', '--dir', default='./dat/', help='path to directory housing universal relations fits, DEFAULT=./dat/', metavar='PATH/TO/DIR')
+parser.add_option('-o', '--outdir', default='./dat/', help='path to output directory, DEFAULT=./dat/', metavar='PATH/TO/OUTDIR')
+parser.add_option('-t', '--tag', default='_props', help='tag for output data file NSNAME_TAG.csv, DEFAULT=_props', metavar='_TAG')
+parser.add_option('-v', '--verbose', action='store_true', default=False, help='toggle verbose output, DEFAULT=False', metavar='False')
+
+opts, args = parser.parse_args()
+nsname = str(args[0])
+props = str(opts.props)
+props = props.split(',')
+mgauss = str(opts.mgauss)
+mgauss = mgauss.split(',')
+mmed, mstd = [float(mparam) for mparam in mgauss]
+Lgauss = str(opts.Lgauss)
+Lgauss = Lgauss.split(',')
+Lmed, Lstd = [float(Lparam) for Lparam in Lgauss]
+nsamps = float(opts.numsamps)
+nsamps = int(nsamps)
+#indir = str(opts.dir)
+outdir = str(opts.outdir)
+tag = str(opts.tag)
+verb = opts.verbose
+
+outfile = open(outdir+nsname+tag+".csv","w")
+outfile.write('Lambda_14,M,'+','.join(props)+'\n')
+
+# LOAD UNIVERSAL RELATION FITS
+
+ur = {'R': RLove,'I': ILove,'Lambda': CanonBiLove,'C': CLove}
+
+# SAMPLE FROM POSTERIORS ON LAMBDA_1.4 AND M
+
+if verb:	print 'Sampling from observed canonical deformability and target mass distributions'
+
+Lsamps = posnormal(Lmed,Lstd,nsamps)
+msamps = posnormal(mmed,mstd,nsamps)
+
+# PERFORM BAYESIAN INFERENCE OF PROPERTIES VIA MONTE-CARLO INTEGRATION
+
+if verb:	print 'Performing Monte-Carlo integration with {0} samples'.format(nsamps)
+
+for samp in range(nsamps):
+
+	if verb:	print 'Computing properties for sample {0}'.format(samp)
+
+	msamp = msamps[samp]
+	Lsamp = Lsamps[samp]
+
+	propvals = []
+	for prop in props:
+	
+		propval = ur[prop](msamp,Lsamp)
+	
+		propvals.append(propval)
+		
+	propvalsout = ['{0:.3e}'.format(item) for item in propvals]
+
+	outfile.write('{0},{1},'.format(Lsamp,msamp)+','.join(propvalsout)+'\n')
+
+if verb:	print 'Done Monte-Carlo integration'
