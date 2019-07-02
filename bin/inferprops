@@ -9,6 +9,7 @@ from numpy.random import normal
 from optparse import OptionParser
 from nsurinf.distributions import *
 from nsurinf.universalrelationfits import *
+from nsurinf.universalrelationerror import * 
 
 parser = OptionParser(usage=__usage__, description=__doc__)
 parser.add_option('-p', '--props', default='R,I,Lambda,C', help='properties to infer, DEFAULT="R,I,Lambda,C"', metavar='PROP1,PROP2')
@@ -43,6 +44,7 @@ outfile.write('Lambda_14,M,'+','.join(props)+'\n')
 # LOAD UNIVERSAL RELATION FITS
 
 ur = {'R': RLove,'I': ILove,'Lambda': CanonBiLove,'C': CLove}
+err = {'R': deltaRLove,'I': deltaILove,'Lambda': deltaCanonBiLove,'C': deltaCLove}
 
 # SAMPLE FROM POSTERIORS ON LAMBDA_1.4 AND M
 
@@ -65,7 +67,7 @@ for samp in range(nsamps):
 	propvals = []
 	for prop in props:
 	
-		propval = ur[prop](msamp,Lsamp)
+		propval = ur[prop](msamp,Lsamp)+err[prop](msamp,Lsamp)
 	
 		propvals.append(propval)
 		
