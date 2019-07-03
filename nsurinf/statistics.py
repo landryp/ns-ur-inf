@@ -13,6 +13,14 @@ def prob(ydat,xgrid):
 
 	return integrate(ydat,xgrid)
 
+def kdeprob(xdat,res=1e3):
+
+	kde = gaussian_kde(xdat)
+	xgrid = np.linspace(min(xdat),max(xdat),res)
+	ydat = kde(xgrid)
+
+	return prob(ydat,xgrid)
+
 def mode(ydat,xgrid):
 
 	maxval = max(ydat)
@@ -74,4 +82,4 @@ def symci(cl,xref,xdat,res=1e3):
 def median(xdat,res=1e3):
 
 	return Lci(1.0,False,xdat,res)
-
+	

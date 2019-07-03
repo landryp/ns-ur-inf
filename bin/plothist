@@ -57,7 +57,7 @@ if logaxis[1]: plt.yscale('log')
 j = 0
 for fname in filenames:
 
-	shortname = (fname.split('/')[-1]).split('.')[0]
+	shortname = (fname.split('/')[-1]).split('_')[0]
 	fpath = indir+fname
 	fdat = np.genfromtxt(fpath,names=True,delimiter=',')
 	if not xvar: xvar = fdat.dtype.names[0]
