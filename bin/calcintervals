@@ -23,7 +23,7 @@ filename = str(args[0])
 nsname = filename.split('_')[0]
 props = str(opts.props)
 props = props.split(',')
-cl = float(opts.clevel)
+cl = 1.-float(opts.clevel)
 npts = float(opts.numpts)
 npts = int(npts)
 indir = str(opts.dir)
@@ -48,7 +48,8 @@ for prop in props:
 
 	dat = sampdat[prop]
 	med = median(dat,npts)
-	lb, cen, ub = symci(0.9,med,dat,npts)
+	lb, cen, ub = symci(cl,False,dat,npts) # by default this calcs symmetric CI
+	cen = med
 	probcheck = kdeprob(dat,npts)
 	
 	outfile.write('{0},{1},{2},{3},{4} \n'.format(prop,lb,cen,ub,probcheck))

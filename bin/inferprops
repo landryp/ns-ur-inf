@@ -5,7 +5,7 @@ __author__ = 'philippe.landry@ligo.org'
 __date__ = '04-2019'
 
 import numpy as np
-from numpy.random import normal
+from numpy.random import uniform
 from optparse import OptionParser
 from nsurinf.distributions import *
 from nsurinf.universalrelationfits import *
@@ -20,6 +20,9 @@ parser.add_option('-n', '--numsamps', default=1e4, help='number of samples to us
 parser.add_option('-o', '--outdir', default='./dat/', help='path to output directory, DEFAULT=./dat/', metavar='PATH/TO/OUTDIR')
 parser.add_option('-t', '--tag', default='_props', help='tag for output data file NSNAME_TAG.csv, DEFAULT=_props', metavar='_TAG')
 parser.add_option('-v', '--verbose', action='store_true', default=False, help='toggle verbose output, DEFAULT=False', metavar='False')
+parser.add_option('-u', '--uniform', action='store_true', default=False, help='toggle uniform vs Gaussian mass prior, DEFAULT=False', metavar='BOOL')
+parser.add_option('-T', '--truncate', default=False, help='toggle truncation of Gaussian mass prior, DEFAULT=FALSE', metavar='MASS_UB')
+parser.add_option('-b', '--beta', default=False, help='toggle beta-prime vs Gaussian Lambda_1.4 prior, DEFAULT=False', metavar='P,Q')
 
 opts, args = parser.parse_args()
 nsname = str(args[0])
@@ -39,6 +42,11 @@ nsamps = int(nsamps)
 outdir = str(opts.outdir)
 tag = str(opts.tag)
 verb = opts.verbose
+unif = opts.uniform
+beta = str(opts.beta).split(',')
+p,q = [float(betaparam) for betaparam in beta]
+trunc = opts.truncate
+if trunc: mub = float(trunc)
 
 outfile = open(outdir+nsname+tag+".csv","w")
 outfile.write('Lambda_14,M,'+','.join(props)+'\n')
@@ -51,8 +59,17 @@ ur = {'R': RLove,'I': ILove,'Lambda': CanonBiLove,'C': CLove,'chi': chiLove}
 
 if verb:	print 'Sampling from observed canonical deformability and target mass distributions'
 
-Lsamps = posnormal(Lmed,Lstd,nsamps)
-msamps = posnormal(mmed,mstd,nsamps)
+if not beta:
+	Lsamps = posnormal(Lmed,Lstd,nsamps)
+else:
+	Lsamps = genbetaprime(p,q,Lmed,Lstd,nsamps)
+
+if not unif:
+	if trunc: msamps = truncnormal(mmed,mstd,mub,nsamps)
+	else: msamps = posnormal(mmed,mstd,nsamps)
+else:
+	msamps = uniform(mmed,mstd,nsamps)
+
 omegasamps = posnormal(omegamed,omegastd,nsamps)
 
 # PERFORM BAYESIAN INFERENCE OF PROPERTIES VIA MONTE-CARLO INTEGRATION
@@ -80,6 +97,6 @@ for samp in range(nsamps):
 		
 	propvalsout = ['{0:.3e}'.format(item) for item in propvals]
 
-	outfile.write('{0},{1},'.format(Lsamp,msamp)+','.join(propvalsout)+'\n')
+	outfile.write('{0:.3e},{1:.6f},'.format(Lsamp,msamp)+','.join(propvalsout)+'\n')
 
 if verb:	print 'Done Monte-Carlo integration'

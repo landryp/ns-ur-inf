@@ -4,11 +4,12 @@
 
 import numpy as np
 from numpy.random import normal
-from scipy.stats import betaprime
+from numpy.random import choice
+from scipy.special import gamma
 
 # DEFINE ALL MANNER OF GAUSSIAN DISTRIBUTIONS
 
-def posnormal(med,std,num=1): # truncated strictly positive Gaussian
+def posnormal(med,std,num=1): # strictly positive Gaussian
 
 	vals = []
 	for i in range(num):
@@ -19,7 +20,7 @@ def posnormal(med,std,num=1): # truncated strictly positive Gaussian
 
 	return vals
 
-def nonnegnormal(med,std,num=1): # truncated non-negative Gaussian 
+def nonnegnormal(med,std,num=1): # non-negative Gaussian 
 
 	vals = []
 	for i in range(num):
@@ -30,15 +31,34 @@ def nonnegnormal(med,std,num=1): # truncated non-negative Gaussian
 
 	return vals
 	
-# DEFINE GENERALIZED BETA PRIME DISTRIBUTION
-
-def posgenbetaprime(a,b,q,num=1):
+def truncnormal(med,std,ub,num=1): # strictly positive Gaussian truncated at specified upper bound
 
 	vals = []
 	for i in range(num):
 		val = -1
-		while val <= 0:
-			val = betaprime.rvs(a,b)/q # NEED TO FIX THIS
+		while val <= 0 or val > ub:
+			val = normal(med,std)
 		vals.append(val)
 
 	return vals
+	
+# DEFINE GENERALIZED BETA PRIME DISTRIBUTION
+
+def genbetaprime_pdf(p,q,a,b,x):
+
+	return (1.+(x/b)**a)**(-p-q)*(x/b)**(a*p-1.)*a*gamma(p+q)/(b*gamma(p)*gamma(q))
+
+def genbetaprime(p,q,a,b,num=1):
+
+	grid = np.arange(0.,1e5,1.)
+	gridprobs = genbetaprime_pdf(p,q,a,b,grid)
+	norm = sum(gridprobs)
+	gridprobs = gridprobs/norm
+
+	vals = []
+	for i in range(num):
+		val = choice(grid,size=1,p=gridprobs)
+		vals.append(val[0])
+
+	return vals
+
