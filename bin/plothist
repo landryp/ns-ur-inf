@@ -7,6 +7,7 @@ __date__ = '05-2019'
 import numpy as np
 from optparse import OptionParser
 from nsstruc.pltsetup import *
+from matplotlib.lines import Line2D
 
 parser = OptionParser(usage=__usage__, description=__doc__)
 parser.add_option('-x', '--xcol', default=False, help='which column to plot on x-axis, DEFAULT=FIRST_COLUMN', metavar='COLUMN_NAME')
@@ -21,6 +22,8 @@ parser.add_option('-f', '--outfile', default='hist', help='plot basename for sav
 parser.add_option('-t', '--tag', default='', help='tag to append to plot basename, DEFAULT=NONE', metavar='-TAG')
 parser.add_option('-c', '--cutoff', default=False, help='cutoff data at line number, DEFAULT=NONE', metavar='LINE_NUM')
 parser.add_option('-b', '--numbins', default=10, help='number of histogram bins to use, DEFAULT=10', metavar='NUM_BINS')
+parser.add_option('-O', '--overlay', default=False, help='overlay vertical lines, DEFAULT=False', metavar='XVAL1+XVAL2,XVAL3,...')
+parser.add_option('-s', '--overstyles', default=None, help='style for overlaid vertical lines, DEFAULT=None', metavar='COLOR1+LS1+LBL1,COLOR2+LS2+LBL2,...')
 
 opts, args = parser.parse_args()
 filenames = str(args[0]).split(',')
@@ -41,8 +44,12 @@ outdir = str(opts.outdir)
 pltname = str(opts.outfile)
 tag = str(opts.tag)
 cutoff = opts.cutoff
-if cutoff:	lastline=int(cutoff)-1
+if cutoff: lastline=int(cutoff)-1
 numbins = int(opts.numbins)
+overlay = opts.overlay
+if overlay: lines = str(overlay).split(',')
+overstyles = str(opts.overstyles)
+styles = overstyles.split(',')
 
 # SET UP FIGURE
 
@@ -72,6 +79,8 @@ for fname in filenames:
 # PLOT DATA
 
 	i = 0
+	clines = []
+	clabels = []
 	style = AUTO_LINESTYLES[i%len(AUTO_LINESTYLES)]
 	if i==0: lb = shortname
 	else: lb = None
@@ -87,8 +96,18 @@ for fname in filenames:
 		
 		i = i+1
 	
+	clines.append(Line2D([0],[0],color=lc,lw=3,ls=style))
+	clabels.append(lb)
 	j = j+1
-
-if key: plt.legend(loc=0)
+	
+if overlay:
+	for k in range(len(lines)):
+		line = lines[k].split('+')
+		clr, lns, lbl = styles[k].split('+')
+		clines.append(Line2D([0],[0],color=AUTO_COLORS[int(clr)],lw=1.5,ls=lns))
+		clabels.append(lbl)
+		for ln in line:
+			plt.axvline(x=float(ln),ls=lns,color=AUTO_COLORS[int(clr)],lw=1.5)
+if key: plt.legend(clines,clabels,loc=0)
 plt.savefig(outdir+pltname+tag+'.png')
 
