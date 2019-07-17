@@ -30,22 +30,26 @@ def deltaCanonBiLove(m,Lambda):
 	
 # GIVE EFFECTIVE UNIVERSAL RELATIONS, MARGINALIZING OVER UNCERTAINTY IN FITS
 
-def ILove(m,Lambda): # I in terms of Ibar-Love fit
+def ILove(m,Lambda,*args): # I in terms of Ibar-Love fit
 
 	return IIbar(m,IbarLove_noerr(m,Lambda)+deltaIbarLove(m,Lambda))
 	
-def CLove(m,Lambda): # C-Love fit
+def CLove(m,Lambda,*args): # C-Love fit
 
 	return CLove_noerr(m,Lambda)+deltaCLove(m,Lambda)
 	
-def RLove(m,Lambda): # R in terms of C-Love fit
+def RLove(m,Lambda,*args): # R in terms of C-Love fit
 
 	return RC(m,CLove(m,Lambda))
 	
-def chiLove(m,Lambda,Omega): # chi in terms of Ibar-Love fit
+def chiLove(m,Lambda,Omega,*args): # chi in terms of Ibar-Love fit
 
 	return chiI(m,ILove(m,Lambda),Omega)
 	
-def CanonBiLove(m,Lambda): # Canonical binary Love fit
+def CanonBiLove(m,Lambda,*args): # Canonical binary Love fit
 
 	return CanonBiLove_noerr(m,Lambda)+deltaCanonBiLove(m,Lambda)
+	
+def OmegaLove(m,Lambda,chi,*args): # Omega in terms of Ibar-Love fit
+
+	return OmegaI(m,ILove(m,Lambda),chi)

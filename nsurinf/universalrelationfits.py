@@ -77,6 +77,10 @@ def chiI(m,I,Omega): # chi in terms of I
 
 	return 1e45*c*I*Omega/(G*m**2*Msun**2)
 	
+def OmegaI(m,I,chi): # Omega in terms of I
+
+	return G*m**2*Msun**2*chi/(1e45*c*I)
+	
 # GIVE EFFECTIVE FITS FOR DERIVED QUANTITIES, WITHOUT ERROR IN UNIVERSAL RELATIONS
 
 def ILove_noerr(m,Lambda): # I in terms of Ibar-Love fit

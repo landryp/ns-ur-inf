@@ -6,6 +6,7 @@ import numpy as np
 from numpy.random import normal
 from numpy.random import choice
 from scipy.special import gamma
+from scipy.stats import gaussian_kde
 
 # DEFINE ALL MANNER OF GAUSSIAN DISTRIBUTIONS
 
@@ -62,3 +63,19 @@ def genbetaprime(p,q,a,b,num=1):
 
 	return vals
 
+# GET DISTRIBUTION FROM SAMPLES
+
+def samplesdistr(xdat,num=1):
+
+	kde = gaussian_kde(xdat)
+	grid = np.linspace(min(xdat),max(xdat),1e5)
+	gridprobs = kde(grid)
+	norm = sum(gridprobs)
+	gridprobs = gridprobs/norm
+	
+	vals = []
+	for i in range(num):
+		val = choice(grid,size=1,p=gridprobs)
+		vals.append(val[0])
+		
+	return vals
