@@ -6,7 +6,7 @@ __date__ = '07-2019'
 
 import numpy as np
 from optparse import OptionParser
-from numpy.random import uniform
+#from numpy.random import uniform
 from numpy.random import randint
 from nsurinf.distributions import *
 from nsurinf.universalrelationfits import *
@@ -38,9 +38,9 @@ cols = colsin.split(',')
 tag = str(opts.tag)
 verb = opts.verbose
 
-ur = {'R': RLove,'I': ILove,'Lambda': CanonBiLove,'C': CLove,'chi': chiLove,'Omega': OmegaLove}
-priorkeys = {'R': "Lambda_14,M",'I': "Lambda_14,M",'Lambda': "Lambda_14,M",'C': "Lambda_14,M",'chi': "Lambda_14,M,Omega",'Omega': "Lambda_14,M,chi"}
-distrkeys = {'gaussian': posnormal, 'uniform': uniform, 'genbetaprime': genbetaprime, 'truncated': truncnormal}
+ur = {'R': RLove14,'I': ILove14,'Lambda': CanonBiLove,'C': CLove14,'chi': chiLove14,'Omega': OmegaLove14,'Omega12': Omega12Love14,'I12': I12Love14}
+priorkeys = {'R': "Lambda_14,M",'I': "Lambda_14,M",'Lambda': "Lambda_14,M",'C': "Lambda_14,M",'chi': "Lambda_14,M,Omega",'Omega': "Lambda_14,M,chi",'Omega12': "Lambda_14,M1,M2,chi1,chi2",'I12': "Lambda_14,M1,M2"}
+distrkeys = {'gaussian': posnormal, 'uniform': unif, 'uniform_m1m2': unifm1m2, 'uniform_mcq': unifmcq, 'genbetaprime': genbetaprime, 'truncated': truncnormal}
 priorvars = [priorkeys[var].split(',') for var in props]
 priorlist = []
 for var in priorvars:
@@ -48,7 +48,7 @@ for var in priorvars:
 		if subvar not in priorlist: priorlist.append(subvar)
 
 outfile = open(outdir+nsname+tag+".csv","w")
-outfile.write(','.join(priorlist)+','+propsin+'\n')
+outfile.write(((','.join(priorlist)+','+propsin+'\n').replace('I12','I1,I2')).replace('Omega','Omega,f').replace('Omega,f12','Omega1,Omega2,f1,f2'))
 
 # SAMPLE FROM INPUT PRIORS ON LAMBDA_14, M, ETC.
 
@@ -71,6 +71,7 @@ for i in range(len(priorlist)):
 		insamps = np.genfromtxt(path,delimiter=',',names=True, dtype=None)
 		if outinds != [] and path==prevpath:
 			outinds = outinds
+			if verb: print 'Sampled jointly with previous variable'.format(priorvar)
 		else:
 			outinds = randint(0,len(insamps[col]),size=nsamps)
 		outsamps = [insamps[col][ind] for ind in outinds]	
@@ -94,8 +95,11 @@ if verb: print 'Performing Monte-Carlo integration with {0} samples'.format(nsam
 for samp in range(nsamps):
 
 	sampslist = []
-	sampslist.append(priorsamps[priorlist.index('M')][samp])
-	sampslist.append(priorsamps[priorlist.index('Lambda_14')][samp])
+	if 'M' in priorlist:
+		sampslist.append(priorsamps[priorlist.index('M')][samp])
+	if 'Lambda_14' in priorlist:
+		sampslist.append(priorsamps[priorlist.index('Lambda_14')][samp])
+	
 	priortmp = [item for item in priorlist if item != 'M' and item != 'Lambda_14']
 	for tmp in priortmp:
 		sampslist.append(priorsamps[priorlist.index(tmp)][samp])
@@ -105,10 +109,40 @@ for samp in range(nsamps):
 	
 		propval = ur[prop](*sampslist)
 		propvals.append(propval)
-		
-	propvalsout = ['{0:.3e}'.format(item) for item in propvals]
 	
-	outfile.write('{1:.3e},{0:.6f},{2:.6f},'.format(*sampslist)+','.join(propvalsout)+'\n')
+	test = []
+	for propv in propvals:
+		for propvv in propv:
+			test.append(str(propvv))
+	
+	if 'nan' not in test and 'inf' not in test and '-inf' not in test:
+		
+		if 'Omega12' in props:
+			propvalsout = ['{0:.3e},{1:.3e}'.format(float(item[0]),float(item[1])) for item in propvals]
+		
+			outfile.write('{0:.3e},{1:.6f},{2:.6f},{3:.6f},{4:.6f},'.format(*sampslist)+','.join(propvalsout)+',{0:.6f},{1:.6f} \n'.format(abs(propvals[-1][0]/(2.*np.pi)),abs(propvals[-1][1]/(2.*np.pi))))
+		
+		elif 'I12' in props:
+			propvalsout = ['{0:.3e},{1:.3e}'.format(float(item[0]),float(item[1])) for item in propvals]
+	
+			outfile.write('{0:.3e},{1:.6f},{2:.6f},{3:.6f},{4:.6f},'.format(*sampslist)+','.join(propvalsout)+'\n')
+
+		elif 'Omega' in props:
+	
+			propvalsout = ['{0:.3e}'.format(item) for item in propvals]
+	
+			outfile.write('{1:.3e},{0:.6f},{2:.6f},'.format(*sampslist)+','.join(propvalsout)+',{0:.6f} \n'.format(abs(propvals[-1]/(2.*np.pi))))
+			
+		elif 'chi' in props:
+	
+			propvalsout = ['{0:.3e}'.format(item) for item in propvals]
+	
+			outfile.write('{1:.3e},{0:.6f},{2:.6f},'.format(*sampslist)+','.join(propvalsout)+'\n')
+	
+		else:	
+			propvalsout = ['{0:.3e}'.format(item) for item in propvals]
+	
+			outfile.write('{1:.3e},{0:.6f},'.format(*sampslist)+','.join(propvalsout)+'\n')
 
 if verb:	print 'Done Monte-Carlo integration'
 

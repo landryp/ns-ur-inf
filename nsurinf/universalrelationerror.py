@@ -53,3 +53,31 @@ def CanonBiLove(m,Lambda,*args): # Canonical binary Love fit
 def OmegaLove(m,Lambda,chi,*args): # Omega in terms of Ibar-Love fit
 
 	return OmegaI(m,ILove(m,Lambda),chi)
+
+def ILove14(m,Lambda14,*args): # I in terms of Ibar-Love fit
+
+	return IIbar(m,IbarLove_noerr(m,CanonBiLove(m,Lambda14))+deltaIbarLove(m,CanonBiLove(m,Lambda14)))
+	
+def CLove14(m,Lambda14,*args): # C-Love fit
+
+	return CLove_noerr(m,CanonBiLove(m,Lambda14))+deltaCLove(m,CanonBiLove(m,Lambda14))
+	
+def RLove14(m,Lambda14,*args): # R in terms of C-Love fit
+
+	return RC(m,CLove(m,CanonBiLove(m,Lambda14)))
+	
+def chiLove14(m,Lambda14,Omega,*args): # chi in terms of Ibar-Love fit
+
+	return chiI(m,ILove(m,CanonBiLove(m,Lambda14)),Omega)
+	
+def OmegaLove14(m,Lambda14,chi,*args): # Omega in terms of Ibar-Love fit
+
+	return OmegaI(m,ILove(m,CanonBiLove(m,Lambda14)),chi)
+	
+def Omega12Love14(Lambda14,m1,m2,chi1,chi2,*args): # Omega1,2 in terms of Ibar-Love fit
+
+	return [OmegaI(m1,ILove(m1,CanonBiLove(m1,Lambda14)),chi1), OmegaI(m2,ILove(m2,CanonBiLove(m2,Lambda14)),chi2)]
+	
+def I12Love14(Lambda14,m1,m2,*args): # I1,2 in terms of Ibar-Love fit
+
+	return [IIbar(m1,IbarLove_noerr(m1,CanonBiLove(m1,Lambda14))+deltaIbarLove(m1,CanonBiLove(m1,Lambda14))), IIbar(m2,IbarLove_noerr(m2,CanonBiLove(m2,Lambda14))+deltaIbarLove(m2,CanonBiLove(m2,Lambda14)))]

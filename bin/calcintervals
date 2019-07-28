@@ -36,7 +36,7 @@ outfile.write('prop,lb,cen,ub,prob \n')
 
 # LOAD SAMPLES FROM NEUTRON STAR PROPERTIES' DISTRIBUTIONS
 
-if verb:	print 'Loading posterior samples for properties of {0}'.format(nsname)
+if verb: print 'Loading posterior samples for properties of {0}'.format(nsname)
 
 sampdat = np.genfromtxt(indir+'/'+filename,names=True,delimiter=',',dtype=None)
 
@@ -44,7 +44,7 @@ sampdat = np.genfromtxt(indir+'/'+filename,names=True,delimiter=',',dtype=None)
 
 for prop in props:
 
-	if verb:	print 'Calculating {0}% confidence interval for {1}'.format(100*cl,prop)
+	if verb: print 'Calculating {0}% confidence interval for {1}'.format(100*cl,prop)
 
 	dat = sampdat[prop]
 	med = median(dat,npts)
@@ -53,7 +53,7 @@ for prop in props:
 	probcheck = kdeprob(dat,npts)
 	
 	outfile.write('{0},{1},{2},{3},{4} \n'.format(prop,lb,cen,ub,probcheck))
-	if verb:	print '{0}% confidence interval for {1} found as {2}+{3}-{4}'.format(100*cl,prop,cen,ub-cen,cen-lb)
+	if verb: print '{0}% confidence interval for {1} found as {2}+{3}-{4}'.format(100*cl,prop,cen,ub-cen,cen-lb)
 	
-if verb:	print 'Done confidence intervals'
+if verb: print 'Done confidence intervals'
 
