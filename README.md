@@ -9,7 +9,7 @@ Code for inference of neutron star properties with universal relations.
 
 * GET-BINSPINFREQS nsname path/to/postsamps.csv "priorcol1,priorcol2" numsamps conflvl /path/to/output
 
-Infer moment of inertia and spin frequency from correlated mass and dimensionless spin distributions (given as discrete posterior samples) for a binary, plus GW170817 Lambda_1.4 bounds; report symmetric 90% confidence interval and median.
+Infer moments of inertia and spin frequencies from correlated mass and dimensionless spin distributions (given as discrete posterior samples) for a binary, plus GW170817 Lambda_1.4 bounds; report symmetric 90% confidence interval and median for moments of inertia, and 90%-credible upper bound on spin frequencies.
 
 ##### GET-SPINFREQ
 
