@@ -24,6 +24,7 @@ parser.add_option('-c', '--cutoff', default=False, help='cutoff data at line num
 parser.add_option('-b', '--numbins', default=10, help='number of histogram bins to use, DEFAULT=10', metavar='NUM_BINS')
 parser.add_option('-O', '--overlay', default=False, help='overlay vertical lines, DEFAULT=False', metavar='XVAL1+XVAL2,XVAL3,...')
 parser.add_option('-s', '--overstyles', default=None, help='style for overlaid vertical lines, DEFAULT=None', metavar='COLOR1+LS1+LBL1,COLOR2+LS2+LBL2,...')
+parser.add_option('-D', '--delim', default=',', help='delimiter in data file, DEFAULT=","', metavar='DELIM')
 
 opts, args = parser.parse_args()
 filenames = str(args[0]).split(',')
@@ -50,6 +51,7 @@ overlay = opts.overlay
 if overlay: lines = str(overlay).split(',')
 overstyles = str(opts.overstyles)
 styles = overstyles.split(',')
+delim = str(opts.delim)
 
 # SET UP FIGURE
 
@@ -66,7 +68,7 @@ for fname in filenames:
 
 	shortname = (fname.split('/')[-1]).split('_')[0]
 	fpath = indir+fname
-	fdat = np.genfromtxt(fpath,names=True,delimiter=',')
+	fdat = np.genfromtxt(fpath,names=True,delimiter=delim)
 	if not xvar: xvar = fdat.dtype.names[0]
 	if not labels:	labels = [xvar,'']
 	if not lims:	lims = [min(fdat[xvar]), max(fdat[xvar])]
@@ -88,11 +90,11 @@ for fname in filenames:
 	
 	if cutoff:
 		
-		plt.hist(fdat[xvar][:lastline],np.linspace(lims[0],lims[1],numbins),normed=True,label=lb,facecolor=lc,alpha=alph)
+		plt.hist([datum for datum in fdat[xvar][:lastline] if datum == datum],np.linspace(lims[0],lims[1],numbins),normed=True,label=lb,facecolor=lc,alpha=alph)
 		
 	else:
 				
-		plt.hist(fdat[xvar],np.linspace(lims[0],lims[1],numbins),normed=True,label=lb,facecolor=lc,alpha=alph,histtype='step',lw=2.5)
+		plt.hist([datum for datum in fdat[xvar] if datum == datum],np.linspace(lims[0],lims[1],numbins),normed=True,label=lb,facecolor=lc,alpha=alph,histtype='step',lw=2.5)
 		
 		i = i+1
 	

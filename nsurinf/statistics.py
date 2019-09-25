@@ -82,4 +82,47 @@ def symci(cl,xref,xdat,res=1e3):
 def median(xdat,res=1e3):
 
 	return Lci(1.0,False,xdat,res)
+
+# BASIC DISCRETE STATS TOOLS
+
+def median_sample(dat): # calculated from left
+
+	dat.sort()
+	mid = len(dat)/2 + 1
+	med = dat[mid]
+
+	return med
 	
+def quantile_sample(dat,quant): # calculated from left
+
+	dat.sort()
+	bnd = int(round(len(dat)*quant))
+	quantile = dat[bnd]
+	
+	return quantile
+
+def hpd_sample(dat,cl):
+
+	dat = [datum for datum in dat if datum == datum]
+	norm = len(dat)
+	dat = np.array(dat)
+	hist, bin_edges = np.histogram(dat,bins='auto')
+	bins = [(bin_edges[i],bin_edges[i+1]) for i in range(len(bin_edges)-1)]
+	hist_dat = zip(hist,bins)
+	hist_dat.sort(reverse=True)
+	hist, bins = zip(*hist_dat)
+	hist = list(hist)
+	bins = list(bins)
+	
+	for i in range(len(bins)):
+		subdat = []
+		for j in range(i+1):
+			bin = bins[j]
+			subdat.extend(dat[(dat >= bin[0]) & (dat < bin[1])])
+		prob = float(len(list(subdat)))/norm
+		if i == 0: maxap = 0.5*(min(subdat)+max(subdat))
+		if prob >= cl: break
+	
+	lb, ub = min(subdat), max(subdat)
+
+	return lb, maxap, ub	

@@ -13,8 +13,8 @@ parser = OptionParser(usage=__usage__, description=__doc__)
 parser.add_option('-p', '--props', default='R,I,Lambda,C,chi', help='properties to infer, DEFAULT="R,I,Lambda,C,chi"', metavar='PROP1,PROP2')
 parser.add_option('-L', '--clevel', default=0.9, help='confidence level to calculate interval for, DEFAULT=0.9', metavar='CONF_LEVEL')
 parser.add_option('-n', '--numpts', default=1e3, help='number of points to use for numerical integration of likelihoods, DEFAULT=1e3', metavar='NUM_PTS')
-parser.add_option('-d', '--dir', default='./dat/', help='path to directory housing universal relations fits, DEFAULT=./dat/', metavar='PATH/TO/DIR')
-parser.add_option('-o', '--outdir', default='./dat/', help='path to output directory, DEFAULT=./dat/', metavar='PATH/TO/OUTDIR')
+parser.add_option('-d', '--dir', default='./', help='path to directory housing universal relations fits, DEFAULT=./', metavar='PATH/TO/DIR')
+parser.add_option('-o', '--outdir', default='./', help='path to output directory, DEFAULT=./', metavar='PATH/TO/OUTDIR')
 parser.add_option('-t', '--tag', default='_CI', help='tag for output data file NSNAME_TAG.csv, DEFAULT=_CI', metavar='_TAG')
 parser.add_option('-v', '--verbose', action='store_true', default=False, help='toggle verbose output, DEFAULT=False', metavar='False')
 
@@ -44,16 +44,24 @@ sampdat = np.genfromtxt(indir+'/'+filename,names=True,delimiter=',',dtype=None)
 
 for prop in props:
 
-	if verb: print 'Calculating {0}% confidence interval for {1}'.format(100*cl,prop)
+	if verb: print 'Calculating {0}% confidence interval for {1}'.format(100*(1.-cl),prop)
 
 	dat = sampdat[prop]
-	med = median(dat,npts)
-	lb, cen, ub = symci(cl,False,dat,npts) # by default this calcs symmetric CI
-	cen = med
-	probcheck = kdeprob(dat,npts)
 	
-	outfile.write('{0},{1},{2},{3},{4} \n'.format(prop,lb,cen,ub,probcheck))
-	if verb: print '{0}% confidence interval for {1} found as {2}+{3}-{4}'.format(100*cl,prop,cen,ub-cen,cen-lb)
+	lb, maxap, ub = hpd_sample(dat,1.-cl)	# MAP + hpd interval
+	cen = maxap
+	
+#	med = median_sample(dat)	# median + symmetric interval
+#	lb = quantile_sample(dat,cl/2)
+#	ub = quantile_sample(dat,1.-cl/2)
+#	cen = med
+	
+#	med = median(dat,npts)	# median + symmetric interval with KDEs
+#	lb, cen, ub = symci(cl,False,dat,npts)
+#	cen = med
+	
+	outfile.write('{0},{1},{2},{3} \n'.format(prop,lb,cen,ub))
+	if verb: print '{0}% confidence interval for {1} found as {2}+{3}-{4}'.format(100*(1.-cl),prop,cen,ub-cen,cen-lb)
 	
 if verb: print 'Done confidence intervals'
 

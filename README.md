@@ -5,50 +5,61 @@ Code for inference of neutron star properties with universal relations.
 
 ### Scripts
 
-##### GET-BINSPINFREQS
+###### Generate prior samples from specified distributions
 
-* GET-BINSPINFREQS nsname path/to/postsamps.csv "priorcol1,priorcol2" numsamps conflvl /path/to/output
+* makepriorsamples varname distr param1,param2,... -v -n numsamps -o path/to/output/dir/
 
-Infer moments of inertia and spin frequencies from correlated mass and dimensionless spin distributions (given as discrete posterior samples) for a binary, plus GW170817 Lambda_1.4 bounds; report symmetric 90% confidence interval and median for moments of inertia, and 90%-credible upper bound on spin frequencies.
+###### Extrapolate binary neutron star spins to merger
 
-##### GET-SPINFREQ
+* getspinatmerger spin Tc tau -v
 
-* GET-SPINFREQ nsname path/to/postsamps.csv "priorcol1,priorcol2" numsamps conflvl /path/to/output
+###### Infer moment of inertia and spin, plus effective spin for a binary
 
-Infer moment of inertia and spin frequency from mass and dimensionless spin distributions (given as discrete posterior samples), plus GW170817 Lambda_1.4 bounds; report symmetric 90% confidence interval and median.
+* inferspin-ur nsname path/to/Lambda14/prior/samples.csv path/to/m/prior/samples.csv path/to/f/prior/samples.csv -v -n nummcsamps -o path/to/output/dir/
 
-##### GET-ANGMOM
+* inferchieff-ur nsname path/to/Lambda14/prior/samples.csv path/to/m1/prior/samples.csv path/to/m2/prior/samples.csv path/to/f1/prior/samples.csv path/to/f2/prior/samples.csv path/to/costheta1/prior/samples.csv path/to/costheta2/prior/samples.csv -v -n nummcsamps -o path/to/output/dir/
 
-* GET-ANGMOM nsname "m_med,m_std,m_ub" "omega_med,omega_std" numsamps conflvl /path/to/output
+###### Infer tidal deformability, radius and compactness
 
-Infer moment of inertia and dimensionless spin from mass and rotational frequency distributions (given as Gaussians), plus GW170817 Lambda_1.4 bounds; report symmetric 90% confidence interval and median.
+* inferradius-ur nsname path/to/Lambda14/prior/samples.csv path/to/m/prior/samples.csv -v -n nummcsamps -o path/to/output/dir/
 
-##### GET-NONROTPROPS
+###### Calculate confidence intervals
 
-* GET-NONROTPROPS nsname "m_med,m_std,m_ub" numsamps conflvl /path/to/output
+* calcintervals postsamps.csv -v -p I,chi -L conflvl -d path/to/post/samples/dir/ -o path/to/output/dir/
 
-Infer radius, compactness, moment of inertia and tidal deformability from mass distributions (given as Gaussian), plus GW170817 Lambda_1.4 bounds; report symmetric 90% confidence interval and median.
+---
 
-##### inferprops
+### Tools
 
-* inferprops nsname -p prop1,prop2 -n numsamps -D priordistr1,priordistr2 -P prior1param1+prior1param2,prior2param1 -o /path/to/output
+###### Make histogram of single observable
 
-Infer posterior distributions on specified properties based on input priors and universal relations.
+* plothist priorsamps.csv,postsamps.csv -x var -l xmin,xmax -d path/to/samples/dir/ -o path/to/output/dir/
 
-##### calcintervals
+###### Make corner plot of several observables
 
-* calcintervals props.csv -p prop -L conflvl -d /path/to/props -o /path/to/output -t _tag
+* plotcorner priorsamps.csv,postsamps.csv -x var1,var2,... -l x1min,x1max,x2min,x2max,... -d path/to/samples/dir/ -o path/to/output/dir/
 
-Calculate median and symmetric confidence interval for specified property.
+---
 
-##### plothist
+### Instructions for performing inference
 
-* plothist props.csv -x f -t f -b 100 -d /path/to/props -o path/to/output -f spinfreq -A "\$f\$ [Hz]","" -O lb+ub,med,44.+59.,707.+716. -s 0+"--"+"sym90CL (lb;ub)",0+"-"+"median (med)",4+"-"+"max_DNS",3+"-"+"max_PSR"
+###### Generate priors on observables
 
-Plot spin frequency posterior histogram with median, confidence interval and reference curves from observations of pulsars.
+* makepriorsamples varname distr param1,param2,... -v -n numsamps -o path/to/output/dir/
 
-##### plotcorner
+###### Infer spin for target pulsar
 
-* plotcorner prior_props.csv,props.csv -x f1,f2 -d /path/to/props -o path/to/output -f spinfreqs -C 0.5,0.9 -l 0.,1000.,0.,1000. -A '$f_1$ [Hz]','$f_2$ [Hz]' -q 0.9 -T 716.,59.
+* inferspin-ur nsname path/to/macro/dir/ path/to/m/prior/samples path/to/f/prior/samples -o path/to/output/dir/
 
-Make corner plot of component spin frequencies for a binary system with confidence regions, upper bounds and reference curves from observations of pulsars.
+* plothist path/to/post.csv -x chi -o path/to/output/dir/ -b numbins -t _chi
+
+* calcintervals nsname_spin.csv -v -p I,chi -L conflvl -d path/to/post.csv -o path/to/output/dir
+
+###### Infer effective spin for target binary pulsar
+
+* inferchieff-ur nsname path/to/macro/dir/ path/to/m1/prior/samples path/to/m2/prior/samples path/to/f1/prior/samples path/to/f2/prior/samples path/to/costheta1/prior/samples path/to/costheta2/prior/samples -o path/to/output/dir/
+
+* plotcorner path/to/post.csv -x chi1,chi2,chieff -o path/to/output/dir/ -b numbins -t _chieff
+
+* calcintervals nsname_chieff.csv -v -p I,chi,chieff -L conflvl -d path/to/post.csv -o path/to/output/dir
+
