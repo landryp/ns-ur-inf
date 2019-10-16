@@ -9,6 +9,7 @@ from optparse import OptionParser
 from nsurinf.ur import *
 from nsurinf.likelihoods import *
 from random import sample
+from numpy.random import choice
 
 parser = OptionParser(usage=__usage__, description=__doc__)
 parser.add_option('-n', '--numsamps', default=1e4, help='maximum number of samples to use for Monte-Carlo integration, DEFAULT=1e4', metavar='MAX_NUM_SAMPS')
@@ -44,12 +45,16 @@ L14prior = np.genfromtxt(L14prior_path,names=True,delimiter=',',dtype=None)['Lam
 mprior = np.genfromtxt(mprior_path,names=True,delimiter=',',dtype=None)['m']
 fprior = np.genfromtxt(fprior_path,names=True,delimiter=',',dtype=None)['f']
 
-minlen = min(len(L14prior),len(mprior),len(fprior))
+minlen = min(len(mprior),len(fprior))
 num = min(minlen,nsamps)
 
-L14samps = sample(L14prior,num)
-msamps = sample(mprior,num)
-fsamps = sample(fprior,num)
+if num != nsamps:
+	print 'Infsufficient number of prior samples available; sampling with replacement'
+	num = nsamps
+
+L14samps = choice(L14prior,size=num)
+msamps = choice(mprior,size=num)
+fsamps = choice(fprior,size=num)
 
 if verb: print 'Loading Lambda14 prior samples from {0}, m prior samples from {1} and f prior samples from {2}'.format(str(L14prior_path),str(mprior_path),str(fprior_path))
 

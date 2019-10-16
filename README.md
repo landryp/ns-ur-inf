@@ -49,17 +49,17 @@ Code for inference of neutron star properties with universal relations.
 
 ###### Infer spin for target pulsar
 
-* inferspin-ur nsname path/to/macro/dir/ path/to/m/prior/samples path/to/f/prior/samples -o path/to/output/dir/
+* inferspin-ur nsname path/to/Lambda14/prior/samples path/to/m/prior/samples path/to/f/prior/samples -o path/to/output/dir/
 
-* plothist path/to/post.csv -x chi -o path/to/output/dir/ -b numbins -t _chi
+* plotcorner path/to/prior.csv,path/to/post.csv -x I,chi -o path/to/output/dir/ -b 40 -t _chi -q 0.05,0.5,0.95 -F 3 -A '$I$','$\chi$' -C 0.5,0.9
 
 * calcintervals nsname_spin.csv -v -p I,chi -L conflvl -d path/to/post.csv -o path/to/output/dir
 
 ###### Infer effective spin for target binary pulsar
 
-* inferchieff-ur nsname path/to/macro/dir/ path/to/m1/prior/samples path/to/m2/prior/samples path/to/f1/prior/samples path/to/f2/prior/samples path/to/costheta1/prior/samples path/to/costheta2/prior/samples -o path/to/output/dir/
+* inferchieff-ur nsname path/to/Lambda14/prior/samples path/to/m1/prior/samples path/to/m2/prior/samples path/to/f1/prior/samples path/to/f2/prior/samples path/to/costheta1/prior/samples path/to/costheta2/prior/samples -o path/to/output/dir/
 
-* plotcorner path/to/post.csv -x chi1,chi2,chieff -o path/to/output/dir/ -b numbins -t _chieff
+* plotcorner path/to/prior.csv,path/to/post.csv -x I1,chi1,chieff -o path/to/output/dir/ -b 40 -t _chieff -q 0.05,0.5,0.95 -F 7 -A '$I_1$','$\chi_1$','$\chi_{\rm eff}$' -C 0.5,0.9 -f corner
 
-* calcintervals nsname_chieff.csv -v -p I,chi,chieff -L conflvl -d path/to/post.csv -o path/to/output/dir
+* calcintervals nsname_chieff.csv -v -p I1,I2,chi1,chi2,chieff -L 0.9 -d path/to/post.csv -o path/to/output/dir
 
